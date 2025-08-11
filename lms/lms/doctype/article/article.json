@@ -1,0 +1,107 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-08-10 20:15:32.481204",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "lbl_artical",
+  "isbn",
+  "article_name",
+  "author",
+  "author_name",
+  "status",
+  "publisher",
+  "publisher_name",
+  "description",
+  "img"
+ ],
+ "fields": [
+  {
+   "fieldname": "lbl_artical",
+   "fieldtype": "Column Break",
+   "label": "Artical"
+  },
+  {
+   "fieldname": "author",
+   "fieldtype": "Link",
+   "label": "Author",
+   "length": 30,
+   "options": "Author"
+  },
+  {
+   "fetch_from": "author.author_name",
+   "fieldname": "author_name",
+   "fieldtype": "Data",
+   "label": "Author Name"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nInactive\nDiscontinued"
+  },
+  {
+   "fieldname": "publisher",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Publisher",
+   "options": "Publisher"
+  },
+  {
+   "fieldname": "publisher_name",
+   "fieldtype": "Data",
+   "label": "Publisher Name"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "img",
+   "fieldtype": "Image",
+   "label": "Image"
+  },
+  {
+   "fieldname": "isbn",
+   "fieldtype": "Data",
+   "label": "ISBN",
+   "length": 13
+  },
+  {
+   "fieldname": "article_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Article Name",
+   "length": 70,
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-08-11 07:36:52.884270",
+ "modified_by": "Administrator",
+ "module": "LMS",
+ "name": "Article",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
