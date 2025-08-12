@@ -5,16 +5,17 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "main_information_section",
   "lbl_artical",
   "isbn",
   "article_name",
-  "author",
-  "author_name",
   "status",
+  "column_break_foiu",
+  "author_name",
   "publisher",
-  "publisher_name",
+  "section_break_pmua",
   "description",
-  "img"
+  "cover"
  ],
  "fields": [
   {
@@ -23,17 +24,10 @@
    "label": "Artical"
   },
   {
-   "fieldname": "author",
-   "fieldtype": "Link",
-   "label": "Author",
-   "length": 30,
-   "options": "Author"
-  },
-  {
-   "fetch_from": "author.author_name",
    "fieldname": "author_name",
    "fieldtype": "Data",
-   "label": "Author Name"
+   "label": "Author Name",
+   "in_list_view": 1
   },
   {
    "fieldname": "status",
@@ -43,25 +37,14 @@
   },
   {
    "fieldname": "publisher",
-   "fieldtype": "Link",
-   "hidden": 1,
-   "label": "Publisher",
-   "options": "Publisher"
-  },
-  {
-   "fieldname": "publisher_name",
    "fieldtype": "Data",
-   "label": "Publisher Name"
+   "label": "Publisher",
+   "in_list_view": 1
   },
   {
    "fieldname": "description",
    "fieldtype": "Text",
    "label": "Description"
-  },
-  {
-   "fieldname": "img",
-   "fieldtype": "Image",
-   "label": "Image"
   },
   {
    "fieldname": "isbn",
@@ -76,13 +59,33 @@
    "label": "Article Name",
    "length": 70,
    "reqd": 1
+  },
+  {
+   "fieldname": "column_break_foiu",
+   "fieldtype": "Column Break",
+   "label": "Author And Publisher Information "
+  },
+  {
+   "fieldname": "section_break_pmua",
+   "fieldtype": "Section Break",
+   "label": "About The book"
+  },
+  {
+   "fieldname": "main_information_section",
+   "fieldtype": "Section Break",
+   "label": "Main information"
+  },
+  {
+   "fieldname": "cover",
+   "fieldtype": "Attach",
+   "label": "Cover"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-11 07:36:52.884270",
- "modified_by": "Administrator",
+ "modified": "2025-08-11 19:14:32.820343",
+ "modified_by": "badr@bdr.com",
  "module": "LMS",
  "name": "Article",
  "owner": "Administrator",

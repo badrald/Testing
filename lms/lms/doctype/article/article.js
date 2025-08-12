@@ -8,46 +8,35 @@
 // });
 
 
+
+
+
 frappe.ui.form.on('Article', {
 	refresh: function(frm) {
-		// Add custom button to fetch book details
-		if (frm.doc.isbn && !frm.is_new()) {
-			frm.add_custom_button(__('Fetch Book Details'), function() {
-				fetch_book_details(frm);
-			}, __('Actions'));
-		}
 		
-		// Add button to clear fetched data
-		if (!frm.is_new()) {
-			frm.add_custom_button(__('Clear Fetched Data'), function() {
-				clear_fetched_data(frm);
-			}, __('Actions'));
-		}
+        const isbn_ctrl = frm.get_field('isbn');
+        if (isbn_ctrl && isbn_ctrl.$wrapper) {
+            const $container = isbn_ctrl.$wrapper.find('.control-input');
+            if ($container.length && !$container.find('.isbn-inline-btn').length) {
+                const $btnFetch = $('<button type="button" class="btn btn-sm btn-success isbn-inline-btn mt-2 " >Featch Data</button>');
+                $btnFetch.on('click', function() {
+                    fetch_book_details(frm);
+                });
+				const $btnClear = $('<button type="button" class="btn btn-sm btn-danger isbn-inline-btn mt-2 ml-2 " >Clear Data</button>');
+                $btnClear.on('click', function() {
+                    clear_fetched_data(frm);
+                });
+				$container.append($btnFetch);
+				$container.append($btnClear);
+            }
+        }
+		frm.add_custom_button(__('Fetch Book Details'), function() {
+			fetch_book_details(frm);
+		}, __('Actions'));
+		
 	},
 	
-	isbn: function(frm) {
-		// Auto-fetch when ISBN is entered (with debounce)
-		if (frm.doc.isbn && frm.doc.isbn.length >= 10) {
-			// Clear any existing timeout
-			if (frm.isbn_timeout) {
-				clearTimeout(frm.isbn_timeout);
-			}
-			
-			// Set new timeout to avoid too many API calls
-			frm.isbn_timeout = setTimeout(function() {
-				// Only auto-fetch for new documents or if user confirms
-				if (frm.is_new()) {
-					fetch_book_details(frm);
-				} else {
-					frappe.confirm(
-						__('Do you want to fetch book details for this ISBN?'),
-						function() {
-							fetch_book_details(frm);
-						}
-					);
-				}
-			}, 1500); // Wait 1.5 seconds after user stops typing
-		}
+	isbn: function(frm) {	
 	},
 	
 	before_save: function(frm) {
@@ -79,16 +68,24 @@ function fetch_book_details(frm) {
 	frappe.call({
 		method: 'fetch_book_details_from_isbn',
 		doc: frm.doc,
-		callback: function(response) {
-			if (response.message) {
-				// Refresh the form to show updated data
-				frm.refresh();
-				frappe.show_alert({
-					message: __('Book details fetched successfully'),
-					indicator: 'green'
-				});
-			}
-		},
+        callback: function(response) {
+            if (response.message) {
+                const f = response.message.fields || {};
+                frm.set_value('article_name', f.article_name);
+                frm.set_value('description', f.description);
+                frm.set_value('publisher', f.publisher);
+                frm.set_value('author_name', f.author_name);
+                frm.set_value('cover', f.cover);
+                frm.set_value('author', f.author);
+                frm.set_value('publisher', f.publisher);
+
+
+                frappe.show_alert({
+                    message: __('Book details fetched successfully'),
+                    indicator: 'green'
+                });
+            }
+        },
 		error: function(error) {
 			console.error('Error fetching book details:', error);
 			frappe.show_alert({
