@@ -1,7 +1,7 @@
 // Copyright (c) 2025, badr.alden.abdullah@gmail.com  and contributors
 // For license information, please see license.txt
 
-// frappe.ui.form.on("Article", {
+// frappe.ui.form.on("Book", {
 // 	refresh(frm) {
 
 // 	},
@@ -11,9 +11,11 @@
 
 
 
-frappe.ui.form.on('Article', {
+frappe.ui.form.on('Book', {
 	refresh: function(frm) {
-		
+		let upove_button = frm.add_custom_button("Featch Data From Api",()=>{
+			fetch_book_details(frm);
+		})
         const isbn_ctrl = frm.get_field('isbn');
         if (isbn_ctrl && isbn_ctrl.$wrapper) {
             const $container = isbn_ctrl.$wrapper.find('.control-input');
@@ -71,14 +73,23 @@ function fetch_book_details(frm) {
         callback: function(response) {
             if (response.message) {
                 const f = response.message.fields || {};
-                frm.set_value('article_name', f.article_name);
-                frm.set_value('description', f.description);
-                frm.set_value('publisher', f.publisher);
-                frm.set_value('author_name', f.author_name);
-                frm.set_value('cover', f.cover);
-                frm.set_value('author', f.author);
-                frm.set_value('publisher', f.publisher);
-
+                if (f.article_name) frm.set_value('article_name', f.article_name);
+                if (f.description) frm.set_value('description', f.description);
+                if (f.publisher) frm.set_value('publisher', f.publisher);
+                if (f.author_name) frm.set_value('author_name', f.author_name);
+                if (f.cover) frm.set_value('cover', f.cover);
+				if(f.category) frm.set_value('category',f.category);
+				frm.set_value("total_copies",10)
+				frm.set_value("available_copies",10)
+                if (Array.isArray(f.author_docnames) && f.author_docnames.length) {
+                    frm.clear_table('authors_names');
+                    f.author_docnames.forEach((author_docname) => {
+                        const row = frm.add_child('authors_names');
+                        row.author = author_docname; // child field is Link to Author
+                        if ('article' in row) row.article = frm.doc.name;
+                    });
+                    frm.refresh_field('authors_names');
+                }
 
                 frappe.show_alert({
                     message: __('Book details fetched successfully'),
@@ -133,7 +144,7 @@ function format_isbn(isbn) {
 }
 
 // Auto-format ISBN on blur
-frappe.ui.form.on('Article', {
+frappe.ui.form.on('Book', {
 	isbn: function(frm) {
 		if (frm.doc.isbn) {
 			let formatted = format_isbn(frm.doc.isbn);

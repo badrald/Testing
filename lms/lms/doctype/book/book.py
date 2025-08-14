@@ -7,12 +7,12 @@ from frappe.model.document import Document
 from frappe import _
 
 
-class Article(Document):
+class Book(Document):
 
     @frappe.whitelist()
     def fetch_book_details_from_isbn(self):
         """Fetch book details from Google Books API using this document's ISBN,
-        upsert related Author/Publisher, and populate Article fields.
+        upsert related Author/Publisher, and populate Book fields.
         """
         isbn = (self.isbn or '').strip()
         if not isbn:
@@ -42,7 +42,13 @@ class Article(Document):
         publisher_name = volume_info.get('publisher')
         description = volume_info.get('description')
         image_links = volume_info.get('imageLinks') or {}
+        categories = volume_info.get("categories") or {}
+
+
         # Prefer higher-res image if available
+        category = categories[0] or ''
+        
+        
         cover_url = (
             image_links.get('extraLarge')
             or image_links.get('large')
@@ -51,26 +57,63 @@ class Article(Document):
             or image_links.get('smallThumbnail')
         )
 
-        # First author from Google Books
-        primary_author_name = (authors[0] if authors else None)
+        # Ensure Author docs exist (by author_name) and collect their docnames
+        author_docnames = []
+        for author_title in authors:
+            existing_name = frappe.db.get_value("Author", {"author_name": author_title}, "name")
+            if existing_name:
+                author_docnames.append(existing_name)
+            else:
+                author_doc = frappe.get_doc({
+                    "doctype": "Author",
+                    "author_name": author_title
+                })
+                author_doc.insert(ignore_permissions=True)
+                author_docnames.append(author_doc.name)
+                author_doc.save(ignore_permissions=True)
+        
+       
+        existing_category = frappe.db.get_value("Category", {"category_name": category}, "name")
+        if not existing_category:
+            category_doc = frappe.get_doc({
+                "doctype": "Category",
+                "category_name": category
+            })
+            category_doc.insert(ignore_permissions=True)
+            category_doc.save(ignore_permissions=True)
+
+        # Ensure Publisher exists (by publisher_name)
+        if publisher_name:
+            exists_publisher = frappe.db.get_value("Publisher", {"publisher_name": publisher_name}, "name")
+            if not exists_publisher:
+                new_publisher = frappe.get_doc({
+                    "doctype": "Publisher",
+                    "publisher_name": publisher_name
+                })
+                new_publisher.insert(ignore_permissions=True)
+                new_publisher.save(ignore_permissions=True)
+
 
         # Prepare updates
         updated_fields = {}
         if title:
-            updated_fields['article_name'] = title
+            updated_fields['book_name'] = title
         if description:
             updated_fields['description'] = description
         if cover_url:
             updated_fields['cover'] = cover_url
         if publisher_name:
             updated_fields['publisher'] = publisher_name
-        if primary_author_name:
-            updated_fields['author_name'] = primary_author_name
+        if authors:
+            updated_fields['authors'] = authors
+        if author_docnames:
+            updated_fields['author_docnames'] = author_docnames
+        if(publisher_name):
+            updated_fields['publisher'] = publisher_name
+        if category: 
+            updated_fields['category'] = category
 
-        # Apply and save
-        if updated_fields:
-            self.update(updated_fields)
-            self.save(ignore_permissions=True)
+
 
         return {
             'updated': True,
@@ -81,12 +124,11 @@ class Article(Document):
     def clear_fetched_data(self):
         """Clear fields populated from external sources, keeping only ISBN."""
         fields_to_clear = {
-            'article_name': None,
-            'author_name': None,
+            'book_name': None,
+            'authors_names': None,
             'publisher': None,
             'description': None,
             'cover': None,
         }
         self.update(fields_to_clear)
-        self.save(ignore_permissions=True)
         return {'cleared': True}

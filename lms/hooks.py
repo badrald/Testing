@@ -151,6 +151,7 @@ app_license = "mit"
 scheduler_events = {
     "daily": [
         "lms.tasks.recompute_all_membership_validity",
+        "lms.tasks.mark_overdue_borrows",
     ],
 }
 

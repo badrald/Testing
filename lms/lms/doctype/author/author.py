@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class LibraryMember(Document):
+class Author(Document):
 	pass

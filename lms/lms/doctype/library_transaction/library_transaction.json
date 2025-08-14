@@ -29,7 +29,7 @@
    "fieldname": "article",
    "fieldtype": "Link",
    "label": "Article",
-   "options": "Article"
+   "options": "Book"
   },
   {
    "fetch_from": "article.artical_name",
@@ -42,7 +42,7 @@
    "fieldname": "library_member",
    "fieldtype": "Link",
    "label": "Library Member",
-   "options": "Library Member"
+   "options": "Member"
   },
   {
    "fieldname": "member_full_name",
@@ -65,7 +65,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-10 21:47:02.954584",
+ "modified": "2025-08-13 10:26:54.745212",
  "modified_by": "Administrator",
  "module": "LMS",
  "name": "Library Transaction",

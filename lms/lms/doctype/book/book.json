@@ -1,8 +1,10 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:isbn",
  "creation": "2025-08-10 20:15:32.481204",
  "doctype": "DocType",
+ "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "main_information_section",
@@ -10,36 +12,29 @@
   "isbn",
   "article_name",
   "status",
+  "total_copies",
+  "available_copies",
   "column_break_foiu",
-  "author_name",
   "publisher",
+  "authros_information_section",
+  "authors_names",
   "section_break_pmua",
   "description",
-  "cover"
+  "cover",
+  "column_break_rtke",
+  "category"
  ],
  "fields": [
   {
    "fieldname": "lbl_artical",
    "fieldtype": "Column Break",
-   "label": "Artical"
-  },
-  {
-   "fieldname": "author_name",
-   "fieldtype": "Data",
-   "label": "Author Name",
-   "in_list_view": 1
+   "label": "Book"
   },
   {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
    "options": "Active\nInactive\nDiscontinued"
-  },
-  {
-   "fieldname": "publisher",
-   "fieldtype": "Data",
-   "label": "Publisher",
-   "in_list_view": 1
   },
   {
    "fieldname": "description",
@@ -50,7 +45,9 @@
    "fieldname": "isbn",
    "fieldtype": "Data",
    "label": "ISBN",
-   "length": 13
+   "length": 13,
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "article_name",
@@ -63,7 +60,7 @@
   {
    "fieldname": "column_break_foiu",
    "fieldtype": "Column Break",
-   "label": "Author And Publisher Information "
+   "label": "Publisher Information "
   },
   {
    "fieldname": "section_break_pmua",
@@ -79,15 +76,55 @@
    "fieldname": "cover",
    "fieldtype": "Attach",
    "label": "Cover"
+  },
+  {
+   "fieldname": "authros_information_section",
+   "fieldtype": "Section Break",
+   "label": "Authro/s Information"
+  },
+  {
+   "fieldname": "authors_names",
+   "fieldtype": "Table MultiSelect",
+   "in_standard_filter": 1,
+   "label": "Authors Names",
+   "options": "Article Author"
+  },
+  {
+   "fetch_from": "author.name1",
+   "fieldname": "publisher",
+   "fieldtype": "Link",
+   "label": "Publisher",
+   "options": "Publisher"
+  },
+  {
+   "fieldname": "total_copies",
+   "fieldtype": "Int",
+   "label": "Total Copies"
+  },
+  {
+   "fieldname": "available_copies",
+   "fieldtype": "Int",
+   "label": "Available Copies"
+  },
+  {
+   "fieldname": "column_break_rtke",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "label": "Category ",
+   "options": "Category"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-11 19:14:32.820343",
- "modified_by": "badr@bdr.com",
+ "modified": "2025-08-13 10:09:32.795394",
+ "modified_by": "Administrator",
  "module": "LMS",
- "name": "Article",
+ "name": "Book",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

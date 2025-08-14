@@ -17,7 +17,7 @@
    "fieldname": "library_member",
    "fieldtype": "Link",
    "label": "Library Member",
-   "options": "Library Member"
+   "options": "Member"
   },
   {
    "fetch_from": "library_member.first_name",
@@ -53,7 +53,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-10 21:47:14.951606",
+ "modified": "2025-08-13 10:26:54.403186",
  "modified_by": "Administrator",
  "module": "LMS",
  "name": "Library Membership",
