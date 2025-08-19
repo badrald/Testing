@@ -139,3 +139,8 @@ class LibraryTransaction(Document):
             limit=1,
         )
         return records[0] if records else None
+
+    @frappe.whitelist()
+    def get_transactions(self):
+        transactions = frappe.get_all("Library Transaction", fields=["name", "transaction_type", "transaction_date", "article", "article_name", "library_member", "member_full_name"])
+        return transactions

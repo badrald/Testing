@@ -21,14 +21,14 @@
 
         <!-- Breadcrumb -->
         <nav class="mr-4 hidden sm:flex" aria-label="Breadcrumb">
-          <ol class="flex items-center space-x-2">
+          <ol class="flex items-center space-x-2 space-x-reverse">
             <li>
               <router-link to="/" class="text-secondary-500 dark:text-secondary-400 hover:text-secondary-700 dark:hover:text-secondary-200 text-sm">
                 الرئيسية
               </router-link>
             </li>
             <li v-if="currentPageName !== 'الرئيسية'">
-              <span class="text-sm font-medium text-secondary-900 dark:text-secondary-100 mr-2"> > {{ currentPageName }}</span>
+              <span class="text-sm font-medium text-secondary-900 dark:text-secondary-100 mr-2"> < {{ currentPageName }}</span>
             </li>
           </ol>
         </nav>
@@ -174,7 +174,7 @@
   </header>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '../stores/app'
@@ -182,7 +182,6 @@ import {
   Bars3Icon,
   MagnifyingGlassIcon,
   BellIcon,
-  ChevronLeftIcon,
   XMarkIcon,
   SunIcon,
   MoonIcon
@@ -203,7 +202,7 @@ const unreadNotificationsCount = computed(() => appStore.unreadNotificationsCoun
 const darkMode = computed(() => appStore.darkMode)
 
 // Page name mapping
-const pageNames: Record<string, string> = {
+const pageNames = {
   '/': 'الرئيسية',
   '/books': 'الكتب',
   '/members': 'الأعضاء',
@@ -236,7 +235,7 @@ const handleSearch = () => {
   }
 }
 
-const markAsRead = (id: number) => {
+const markAsRead = (id) => {
   appStore.markNotificationAsRead(id)
 }
 
@@ -244,11 +243,11 @@ const markAllAsRead = () => {
   appStore.markAllNotificationsAsRead()
 }
 
-const removeNotification = (id: number) => {
+const removeNotification = (id) => {
   appStore.removeNotification(id)
 }
 
-const getNotificationColor = (type: string) => {
+const getNotificationColor = (type) => {
   switch (type) {
     case 'success':
       return 'bg-success-500'
@@ -261,7 +260,7 @@ const getNotificationColor = (type: string) => {
   }
 }
 
-const formatTime = (dateString: string) => {
+const formatTime = (dateString) => {
   const date = new Date(dateString)
   const now = new Date()
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
@@ -273,8 +272,8 @@ const formatTime = (dateString: string) => {
 }
 
 // Close dropdowns when clicking outside
-const handleClickOutside = (event: Event) => {
-  const target = event.target as Element
+const handleClickOutside = (event) => {
+  const target = event.target
   if (!target.closest('.relative')) {
     showNotifications.value = false
   }

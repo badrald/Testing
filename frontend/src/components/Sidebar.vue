@@ -1,7 +1,8 @@
 <template>
   <!-- Sidebar -->
   <div
-    class="fixed inset-y-0 right-0 z-50 w-64 glass-effect shadow-2xl transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 border-l border-secondary-200/50 dark:border-secondary-700/50"
+    class="fixed inset-y-0 right-0 z-50 w-64 glass-effect shadow-2xl transform transition-all duration-300 ease-in-out border-l border-secondary-200/50 dark:border-secondary-700/50"
+    :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full'"
 
   >
       <!-- Sidebar Header -->
@@ -110,11 +111,10 @@
   ></div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/app'
-import { useTransactionsStore } from '../stores/transactions'
 import {
   BookOpenIcon,
   HomeIcon,
@@ -131,14 +131,12 @@ import {
 
 const router = useRouter()
 const appStore = useAppStore()
-const transactionsStore = useTransactionsStore()
 
 const showUserMenu = ref(false)
 
 // Computed properties from stores
 const sidebarOpen = computed(() => appStore.sidebarOpen)
 const currentUser = computed(() => appStore.currentUser)
-const overdueCount = computed(() => transactionsStore.overdueTransactions)
 
 // Navigation items with dynamic badges
 const navigation = computed(() => [
@@ -151,7 +149,7 @@ const navigation = computed(() => [
     name: 'المعاملات', 
     path: '/transactions', 
     icon: ClipboardDocumentListIcon,
-    badge: overdueCount.value
+    badge: 0 // Can be updated with real data
   },
   { name: 'التقارير', path: '/reports', icon: ChartBarIcon },
 ])
@@ -165,7 +163,7 @@ const closeSidebar = () => {
   appStore.closeSidebar()
 }
 
-const handleUserAction = async (action: string) => {
+const handleUserAction = async (action) => {
   showUserMenu.value = false
   
   switch (action) {
@@ -178,15 +176,14 @@ const handleUserAction = async (action: string) => {
     case 'logout':
       if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
         await appStore.logout()
-        router.push('/login')
       }
       break
   }
 }
 
 // Close user menu when clicking outside
-const handleClickOutside = (event: Event) => {
-  const target = event.target as Element
+const handleClickOutside = (event) => {
+  const target = event.target
   if (!target.closest('.relative')) {
     showUserMenu.value = false
   }

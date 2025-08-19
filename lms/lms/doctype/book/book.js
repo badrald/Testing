@@ -76,11 +76,14 @@ function fetch_book_details(frm) {
                 if (f.article_name) frm.set_value('article_name', f.article_name);
                 if (f.description) frm.set_value('description', f.description);
                 if (f.publisher) frm.set_value('publisher', f.publisher);
-                if (f.author_name) frm.set_value('author_name', f.author_name);
+                if (f.author_name) {
+                    // Display author names as text (for information only)
+                    console.log('Authors: ', f.author_name);
+                }
                 if (f.cover) frm.set_value('cover', f.cover);
 				if(f.category) frm.set_value('category',f.category);
-				frm.set_value("total_copies",10)
-				frm.set_value("available_copies",10)
+				frm.set_value("total_copies",10);
+				frm.set_value("available_copies",10);
                 if (Array.isArray(f.author_docnames) && f.author_docnames.length) {
                     frm.clear_table('authors_names');
                     f.author_docnames.forEach((author_docname) => {

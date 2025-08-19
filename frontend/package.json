@@ -1,43 +1,34 @@
 {
-  "name": "frontend",
-  "version": "0.0.0",
+  "name": "frappe-ui-frontend",
   "private": true,
+  "version": "0.0.0",
   "type": "module",
-  "engines": {
-    "node": "^20.19.0 || >=22.12.0"
-  },
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "vite build --base=/assets/lms/frontend/ && yarn copy-html-entry",
     "preview": "vite preview",
-    "build-only": "vite build",
-    "type-check": "vue-tsc --build",
-    "lint": "eslint . --fix"
+    "lint": "biome check --write .",
+    "copy-html-entry": "cp ../lms/public/frontend/index.html ../lms/www/frontend.html"
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
+    "feather-icons": "^4.29.2",
+    "frappe-ui": "^0.1.149",
     "pinia": "^3.0.3",
-    "vue": "^3.5.18",
-    "vue-router": "^4.5.1"
+    "socket.io-client": "^4.7.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
-    "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.16.5",
-    "@vitejs/plugin-vue": "^6.0.1",
-    "@vue/eslint-config-typescript": "^14.6.0",
-    "@vue/tsconfig": "^0.7.0",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^9.31.0",
-    "eslint-plugin-vue": "~10.3.0",
-    "jiti": "^2.4.2",
-    "npm-run-all2": "^8.0.4",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "autoprefixer": "^10.4.2",
+    "postcss": "^8.4.5",
+    "tailwindcss": "^3.4.15",
     "typescript": "~5.8.0",
-    "vite": "^7.0.6",
-    "vite-plugin-vue-devtools": "^8.0.0",
-    "vue-tsc": "^3.0.4"
+    "vite": "^5.4.10"
   }
 }

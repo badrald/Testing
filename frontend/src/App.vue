@@ -1,12 +1,12 @@
 <template>
-  <div id="app" class="h-screen bg-gradient-to-br from-secondary-50 via-primary-50 to-purple-50 dark:from-secondary-900 dark:via-secondary-800 dark:to-secondary-900 flex overflow-hidden transition-colors duration-500">
+  <div id="app" class="h-screen bg-gradient-to-br from-secondary-50 via-primary-50 to-purple-50 dark:from-secondary-900 dark:via-secondary-800 dark:to-secondary-900 flex overflow-hidden transition-colors duration-500" dir="rtl">
     <!-- Sidebar -->
     <Sidebar />
     
     <!-- Main Content Area -->
     <div 
       class="flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out"
-      :class="sidebarOpen ? 'lg:mr-0' : 'lg:mr-0'"
+      :class="sidebarOpen ? 'lg:mr-64' : 'lg:mr-0'"
     >
       <!-- Header -->
       <Header />
@@ -15,7 +15,7 @@
       <main class="flex-1 overflow-y-auto">
         <div class="p-4 sm:p-6 lg:p-8">
           <div class="animate-fade-in">
-            <RouterView />
+            <router-view />
           </div>
         </div>
         
@@ -55,7 +55,7 @@
     </div>
 
     <!-- Toast Notifications -->
-    <div class="fixed top-4 left-4 z-50 space-y-2">
+    <div class="fixed top-4 right-4 z-50 space-y-2">
       <div
         v-for="toast in toasts"
         :key="toast.id"
@@ -86,13 +86,9 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
-import { RouterView } from 'vue-router'
 import { useAppStore } from './stores/app'
-import { useBooksStore } from './stores/books'
-import { useMembersStore } from './stores/members'
-import { useTransactionsStore } from './stores/transactions'
 import Sidebar from './components/Sidebar.vue'
 import Header from './components/Header.vue'
 import {
@@ -106,37 +102,23 @@ import {
 
 // Stores
 const appStore = useAppStore()
-const booksStore = useBooksStore()
-const membersStore = useMembersStore()
-const transactionsStore = useTransactionsStore()
 
 // Toast notifications
-const toasts = ref<Array<{
-  id: number
-  type: 'success' | 'error' | 'warning' | 'info'
-  title: string
-  message?: string
-}>>([])
+const toasts = ref([])
 
 // Computed properties
 const sidebarOpen = computed(() => appStore.sidebarOpen)
-const isLoading = computed(() => 
-  booksStore.loading || membersStore.loading || transactionsStore.loading
-)
+const isLoading = ref(false)
 
 // Methods
-const removeToast = (id: number) => {
+const removeToast = (id) => {
   const index = toasts.value.findIndex(toast => toast.id === id)
   if (index > -1) {
     toasts.value.splice(index, 1)
   }
 }
 
-const addToast = (toast: {
-  type: 'success' | 'error' | 'warning' | 'info'
-  title: string
-  message?: string
-}) => {
+const addToast = (toast) => {
   const newToast = {
     id: Date.now(),
     ...toast,
@@ -149,7 +131,7 @@ const addToast = (toast: {
   }, 5000)
 }
 
-const getToastBorderClass = (type: string) => {
+const getToastBorderClass = (type) => {
   switch (type) {
     case 'success':
       return 'border-success-500'
@@ -162,7 +144,7 @@ const getToastBorderClass = (type: string) => {
   }
 }
 
-const getToastIconClass = (type: string) => {
+const getToastIconClass = (type) => {
   switch (type) {
     case 'success':
       return 'text-success-500'
@@ -175,7 +157,7 @@ const getToastIconClass = (type: string) => {
   }
 }
 
-const getToastIcon = (type: string) => {
+const getToastIcon = (type) => {
   switch (type) {
     case 'success':
       return CheckCircleIcon
@@ -188,18 +170,11 @@ const getToastIcon = (type: string) => {
   }
 }
 
-// Initialize data on app mount
+// Initialize app on mount
 onMounted(async () => {
   try {
-    // Initialize dark mode
-    appStore.initializeDarkMode()
-    
-    // Load initial data
-    await Promise.all([
-      booksStore.fetchBooks(),
-      membersStore.fetchMembers(),
-      transactionsStore.fetchTransactions(),
-    ])
+    // Initialize the app store
+    await appStore.initializeApp()
     
     addToast({
       type: 'success',
@@ -207,6 +182,7 @@ onMounted(async () => {
       message: 'تم تحميل البيانات بنجاح'
     })
   } catch (error) {
+    console.error('Error initializing app:', error)
     addToast({
       type: 'error',
       title: 'خطأ في التحميل',
@@ -214,11 +190,4 @@ onMounted(async () => {
     })
   }
 })
-
-// Make addToast available globally for other components
-window.addToast = addToast
 </script>
-
-<style scoped>
-/* Additional component-specific styles if needed */
-</style>

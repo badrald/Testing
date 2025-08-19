@@ -8,6 +8,9 @@ from frappe import _
 
 
 class Book(Document):
+    def get_books(self):
+        books = frappe.get_all("Book", fields=["name", "article_name", "isbn", "publisher", "status", "cover"])
+        return books
 
     @frappe.whitelist()
     def fetch_book_details_from_isbn(self):
@@ -42,11 +45,11 @@ class Book(Document):
         publisher_name = volume_info.get('publisher')
         description = volume_info.get('description')
         image_links = volume_info.get('imageLinks') or {}
-        categories = volume_info.get("categories") or {}
+        categories = volume_info.get("categories") or []
 
 
         # Prefer higher-res image if available
-        category = categories[0] or ''
+        category = categories[0] if categories else ''
         
         
         cover_url = (
@@ -73,14 +76,16 @@ class Book(Document):
                 author_doc.save(ignore_permissions=True)
         
        
-        existing_category = frappe.db.get_value("Category", {"category_name": category}, "name")
-        if not existing_category:
-            category_doc = frappe.get_doc({
-                "doctype": "Category",
-                "category_name": category
-            })
-            category_doc.insert(ignore_permissions=True)
-            category_doc.save(ignore_permissions=True)
+        # Only create category if it exists and is not empty
+        if category:
+            existing_category = frappe.db.get_value("Category", {"category_name": category}, "name")
+            if not existing_category:
+                category_doc = frappe.get_doc({
+                    "doctype": "Category",
+                    "category_name": category
+                })
+                category_doc.insert(ignore_permissions=True)
+                category_doc.save(ignore_permissions=True)
 
         # Ensure Publisher exists (by publisher_name)
         if publisher_name:
@@ -97,7 +102,7 @@ class Book(Document):
         # Prepare updates
         updated_fields = {}
         if title:
-            updated_fields['book_name'] = title
+            updated_fields['article_name'] = title
         if description:
             updated_fields['description'] = description
         if cover_url:
@@ -105,11 +110,9 @@ class Book(Document):
         if publisher_name:
             updated_fields['publisher'] = publisher_name
         if authors:
-            updated_fields['authors'] = authors
+            updated_fields['author_name'] = ', '.join(authors)  # Join multiple authors
         if author_docnames:
             updated_fields['author_docnames'] = author_docnames
-        if(publisher_name):
-            updated_fields['publisher'] = publisher_name
         if category: 
             updated_fields['category'] = category
 
@@ -124,11 +127,60 @@ class Book(Document):
     def clear_fetched_data(self):
         """Clear fields populated from external sources, keeping only ISBN."""
         fields_to_clear = {
-            'book_name': None,
+            'article_name': None,
             'authors_names': None,
             'publisher': None,
             'description': None,
             'cover': None,
+            'category': None,
         }
         self.update(fields_to_clear)
         return {'cleared': True}
+
+
+# API Functions
+@frappe.whitelist()
+def get_books():
+    """Get all books with basic information"""
+    books = frappe.get_all("Book", fields=[
+        "name", 
+        "article_name", 
+        "isbn", 
+        "publisher", 
+        "status", 
+        "cover",
+        "total_copies",
+        "available_copies",
+        "category"
+    ])
+    return books
+
+@frappe.whitelist()
+def get_book_by_id(book_id):
+    """Get specific book by ID"""
+    try:
+        book = frappe.get_doc("Book", book_id)
+        return book.as_dict()
+    except frappe.DoesNotExistError:
+        frappe.throw(_("Book not found"))
+
+@frappe.whitelist()
+def search_books(query):
+    """Search books by title, ISBN, or author"""
+    books = frappe.get_all("Book", 
+        filters=[
+            ['article_name', 'like', f'%{query}%'],
+            'or',
+            ['isbn', 'like', f'%{query}%'],
+        ],
+        fields=[
+            "name", 
+            "article_name", 
+            "isbn", 
+            "publisher", 
+            "status", 
+            "cover",
+            "category"
+        ]
+    )
+    return books
