@@ -7,25 +7,25 @@
         <p class="mt-2 text-gray-600">إدارة مجموعة كتب المكتبة</p>
       </div>
       <div class="mt-4 sm:mt-0">
-        <Button @click="showAddBookModal = true">
-          <FeatherIcon name="plus" class="w-4 h-4 mr-2" />
+        <Button @click="showAddBookModal = true" class="btn-primary w-full h-2 p-5 text-white ">
+          <FeatherIcon name="plus" class="w-4 h-4 " />
           إضافة كتاب جديد
         </Button>
       </div>
     </div>
 
     <!-- Filters and Search -->
-    <Card >
+    <Card>
       <div class="card-body">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <!-- Search -->
-          <div class="md:col-span-2">
-            <Input v-model="searchQuery" placeholder="البحث بالعنوان، المؤلف، أو ISBN..." />
+          <div class="md:col-span-3">
+            <Input v-model="searchQuery" placeholder="البحث بالعنوان، المؤلف، أو ISBN..." class="h-full" />
           </div>
 
           <!-- Status Filter -->
           <div>
-            <select v-model="selectedStatus" class="w-full form-select">
+            <select v-model="selectedStatus" class="w-full h-full form-select">
               <option value="">جميع الحالات</option>
               <option value="Active">متاح</option>
               <option value="Inactive">مستعار</option>
@@ -69,28 +69,80 @@
 
     </div>
 
-    <Dialog v-model="showAddBookModal" title="Add Book">
-      <form @submit.prevent="addBook">
-        <div class="space-y-4">
-          <Input v-model="newBook.article_name" label="Title" />
-          <Input v-model="newBook.isbn" label="ISBN" />
-          <Input v-model="newBook.publisher" label="Publisher" />
-          <Input v-model="newBook.status" label="Status" />
-        </div>
-        <div class="mt-6 flex justify-end">
-          <Button @click="showAddBookModal = false" theme="gray" class="mr-2">Cancel</Button>
-          <Button type="submit" theme="primary">Save</Button>
-        </div>
+    <!-- Add Book Modal -->
+    <ModernDialog v-model="showAddBookModal">
+      <template #title>
+        إضافة كتاب جديد
+      </template>
+
+      <!-- Body -->
+      <form @submit.prevent="addBook" class="space-y-4">
+        <Input v-model="newBook.article_name" label="Title" />
+        <Input v-model="newBook.isbn" label="ISBN" />
+        <Input v-model="newBook.publisher" label="Publisher" />
+        <Input v-model="newBook.status" label="Status" />
       </form>
-    </Dialog>
+
+      <!-- Actions -->
+      <template #actions>
+        <Button @click="showAddBookModal = false" theme="gray" class="mr-2">Cancel</Button>
+        <Button @click="addBook" theme="primary">Save</Button>
+      </template>
+    </ModernDialog>
+
+    <!-- Edit Book Modal -->
+    <ModernDialog v-model="showEditBookModal">
+      <template #title>
+        تعديل بيانات الكتاب
+      </template>
+
+      <!-- Body -->
+      <form @submit.prevent="updateBook" class="space-y-4">
+        <Input v-model="editBookData.article_name" label="Title" />
+        <Input v-model="editBookData.isbn" label="ISBN" />
+        <Input v-model="editBookData.publisher" label="Publisher" />
+        <Input v-model="editBookData.status" label="Status" />
+      </form>
+
+      <!-- Actions -->
+      <template #actions>
+        <Button @click="showEditBookModal = false" theme="gray" class="mr-2">Cancel</Button>
+        <Button @click="updateBook" theme="primary">Update</Button>
+      </template>
+    </ModernDialog>
+
+    <!-- Delete Book Confirmation Modal -->
+    <ModernDialog v-model="showDeleteBookModal">
+      <template #title>
+        حذف كتاب
+      </template>
+
+      <!-- Body -->
+      <div class="space-y-4">
+        <p>
+          هل أنت متأكد أنك تريد حذف
+          <span class="font-bold">{{ deleteBookData.article_name }}</span>؟
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <template #actions>
+        <Button @click="showDeleteBookModal = false" theme="gray" class="btn bg-gray-200 p-4 ml-2">الغاء</Button>
+        <Button @click="confirmDeleteBook" class="btn bg-red-500 hover:bg-current text-white p-4 ">حذف</Button>
+      </template>
+    </ModernDialog>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import { createResource, Button, Card, Dialog, Input, Badge, FeatherIcon, frappeRequest } from 'frappe-ui'
+import { createResource, Button, Card, Input, Badge, FeatherIcon, frappeRequest } from 'frappe-ui'
+import ModernDialog from '../components/ModernDialog.vue'
 
 const showAddBookModal = ref(false)
+const showEditBookModal = ref(false)
+const showDeleteBookModal = ref(false)
 const searchQuery = ref('')
 const selectedStatus = ref('')
 
@@ -99,6 +151,19 @@ const newBook = ref({
   isbn: '',
   publisher: '',
   status: 'Active',
+})
+
+const editBookData = ref({
+  name: '',
+  article_name: '',
+  isbn: '',
+  publisher: '',
+  status: 'Active',
+})
+
+const deleteBookData = ref({
+  name: '',
+  article_name: '',
 })
 
 const booksResource = createResource({
@@ -127,17 +192,7 @@ const filteredBooks = computed(() => {
   return books
 })
 
-// Methods
-const getStatusBadgeClass = (status) => {
-  switch (status) {
-    case 'Active':
-      return 'badge-success'
-    case 'Inactive':
-      return 'badge-warning'
-    default:
-      return 'badge-secondary'
-  }
-}
+
 
 const getStatusText = (status) => {
   switch (status) {
@@ -151,18 +206,56 @@ const getStatusText = (status) => {
 }
 
 
-const addBook = () => {
-  // To be implemented
-  console.log("addBook", newBook.value)
+const addBook = async () => {
+  try {
+    await frappeRequest({
+      method: 'POST',
+      url: 'lms.api.books.add_book',
+      data: newBook.value,
+    })
+    booksResource.reload()
+    showAddBookModal.value = false
+    newBook.value = { article_name: '', isbn: '', publisher: '', status: 'Active' }
+  } catch (e) {
+    console.error('Error adding book:', e)
+  }
 }
 
 const editBook = (book) => {
-  // To be implemented
-  console.log("editBook", book)
+  editBookData.value = { ...book }
+  showEditBookModal.value = true
+}
+
+const updateBook = async () => {
+  try {
+    await frappeRequest({
+      method: 'PUT',
+      url: 'lms.api.books.update_book',
+      data: editBookData.value,
+    })
+    booksResource.reload()
+    showEditBookModal.value = false
+  } catch (e) {
+    console.error('Error updating book:', e)
+  }
 }
 
 const deleteBook = (book) => {
-  // To be implemented
-  console.log("deleteBook", book)
+  deleteBookData.value = { name: book.name, article_name: book.article_name }
+  showDeleteBookModal.value = true
+}
+
+const confirmDeleteBook = async () => {
+  try {
+    await frappeRequest({
+      method: 'DELETE',
+      url: 'lms.api.books.delete_book',
+      data: { name: deleteBookData.value.name },
+    })
+    booksResource.reload()
+    showDeleteBookModal.value = false
+  } catch (e) {
+    console.error('Error deleting book:', e)
+  }
 }
 </script>

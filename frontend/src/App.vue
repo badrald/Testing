@@ -1,88 +1,77 @@
 <template>
-  <div id="app" class="h-screen bg-gradient-to-br from-secondary-50 via-primary-50 to-purple-50 dark:from-secondary-900 dark:via-secondary-800 dark:to-secondary-900 flex overflow-hidden transition-colors duration-500" dir="rtl">
-    <!-- Sidebar -->
-    <Sidebar />
-    
-    <!-- Main Content Area -->
-    <div 
-      class="flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out"
-      :class="sidebarOpen ? 'lg:mr-64' : 'lg:mr-0'"
-    >
-      <!-- Header -->
-      <Header />
-      
-      <!-- Main Content -->
-      <main class="flex-1 overflow-y-auto">
-        <div class="p-4 sm:p-6 lg:p-8">
-          <div class="animate-fade-in">
-            <router-view />
-          </div>
-        </div>
-        
-        <!-- Footer -->
-        <footer class="bg-white/80 backdrop-blur-sm border-t border-secondary-200 mt-8">
-          <div class="px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-              <div class="flex items-center space-x-4">
-                <div class="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                  <BookOpenIcon class="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-secondary-900">نظام إدارة المكتبة</p>
-                  <p class="text-xs text-secondary-500">© 2025 جميع الحقوق محفوظة</p>
-                </div>
-              </div>
-              <div class="mt-4 md:mt-0">
-                <p class="text-xs text-secondary-500">
-                  تم التطوير بواسطة  <a href="https://github.com/badrald">بدر الدين عبد الله </a>
-                </p>
+  <div id="app" dir="rtl">
+    <template v-if="$route.name === 'Login'">
+      <router-view />
+    </template>
+    <template v-else>
+      <div
+        class="h-screen bg-gradient-to-br from-secondary-50 via-primary-50 to-purple-50 dark:from-secondary-900 dark:via-secondary-800 dark:to-secondary-900 flex overflow-hidden transition-colors duration-500">
+        <!-- Sidebar -->
+        <Sidebar />
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out"
+          :class="sidebarOpen ? 'lg:mr-64' : 'lg:mr-0'">
+          <!-- Header -->
+          <Header />
+          <!-- Main Content -->
+          <main class="flex-1 overflow-y-auto">
+            <div class="p-4 sm:p-6 lg:p-8">
+              <div class="animate-fade-in">
+                <router-view />
               </div>
             </div>
+            <!-- Footer -->
+            <footer class="bg-white/80 backdrop-blur-sm border-t border-secondary-200 mt-8">
+              <div class="px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                  <div class="flex items-center space-x-4">
+                    <div class="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                      <BookOpenIcon class="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-secondary-900">نظام إدارة المكتبة</p>
+                      <p class="text-xs text-secondary-500">© 2025 جميع الحقوق محفوظة</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 md:mt-0">
+                    <p class="text-xs text-secondary-500">
+                      تم التطوير بواسطة <a href="https://github.com/badrald">بدر الدين عبد الله </a>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </footer>
+          </main>
+        </div>
+        <!-- Loading Overlay -->
+        <div v-if="isLoading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
+            <div class="loading-spinner w-6 h-6"></div>
+            <span class="text-secondary-700">جاري التحميل...</span>
           </div>
-        </footer>
-      </main>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div
-      v-if="isLoading"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    >
-      <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
-        <div class="loading-spinner w-6 h-6"></div>
-        <span class="text-secondary-700">جاري التحميل...</span>
-      </div>
-    </div>
-
-    <!-- Toast Notifications -->
-    <div class="fixed top-4 right-4 z-50 space-y-2">
-      <div
-        v-for="toast in toasts"
-        :key="toast.id"
-        class="bg-white rounded-lg shadow-large border-r-4 p-4 max-w-sm animate-slide-in"
-        :class="getToastBorderClass(toast.type)"
-      >
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-            <component
-              :is="getToastIcon(toast.type)"
-              class="w-5 h-5"
-              :class="getToastIconClass(toast.type)"
-            />
+        </div>
+        <!-- Toast Notifications -->
+        <div class="fixed top-4 right-4 z-50 space-y-2">
+          <div v-for="toast in toasts" :key="toast.id"
+            class="bg-white rounded-lg shadow-large border-r-4 p-4 max-w-sm animate-slide-in"
+            :class="getToastBorderClass(toast.type)">
+            <div class="flex items-start">
+              <div class="flex-shrink-0">
+                <component :is="getToastIcon(toast.type)" class="w-5 h-5" :class="getToastIconClass(toast.type)" />
+              </div>
+              <div class="mr-3 flex-1">
+                <p class="text-sm font-medium text-secondary-900">{{ toast.title }}</p>
+                <p v-if="toast.message" class="text-sm text-secondary-600 mt-1">{{ toast.message }}</p>
+              </div>
+              <button @click="removeToast(toast.id)"
+                class="flex-shrink-0 p-1 text-secondary-400 hover:text-secondary-600">
+                <XMarkIcon class="w-4 h-4" />
+              </button>
+            </div>
           </div>
-          <div class="mr-3 flex-1">
-            <p class="text-sm font-medium text-secondary-900">{{ toast.title }}</p>
-            <p v-if="toast.message" class="text-sm text-secondary-600 mt-1">{{ toast.message }}</p>
-          </div>
-          <button
-            @click="removeToast(toast.id)"
-            class="flex-shrink-0 p-1 text-secondary-400 hover:text-secondary-600"
-          >
-            <XMarkIcon class="w-4 h-4" />
-          </button>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -124,7 +113,7 @@ const addToast = (toast) => {
     ...toast,
   }
   toasts.value.push(newToast)
-  
+
   // Auto remove after 5 seconds
   setTimeout(() => {
     removeToast(newToast.id)
@@ -175,7 +164,7 @@ onMounted(async () => {
   try {
     // Initialize the app store
     await appStore.initializeApp()
-    
+
     addToast({
       type: 'success',
       title: 'مرحباً بك',

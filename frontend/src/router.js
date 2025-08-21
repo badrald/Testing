@@ -38,7 +38,7 @@ const routes = [
 	{
 		path: "/categories",
 		name: "Categories",
-		component: () => import("@/pages/Categories.vue"),
+		component: () => import("./pages/Categories.vue"),
 		meta: {
 			title: 'التصنيفات - نظام إدارة المكتبة'
 		}

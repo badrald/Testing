@@ -1,37 +1,37 @@
 <template>
-  <div class="m-3 flex flex-row items-center justify-center">
-    <Card title="Login to your FrappeUI App!" class="w-full max-w-md mt-4">
-      <form class="flex flex-col space-y-2 w-full" @submit.prevent="submit">
-        <Input
-          required
-          name="email"
-          type="text"
-          placeholder="johndoe@email.com"
-          label="User ID"
-        />
-        <Input
-          required
-          name="password"
-          type="password"
-          placeholder="••••••"
-          label="Password"
-        />
-        <Button :loading="session.login.loading" variant="solid"
-          >Login</Button
-        >
-      </form>
-    </Card>
-  </div>
+  <LoginLayout :loading="session.login.loading" :error-message="errorMessage" @login="handleLogin"
+    @social-login="handleSocialLogin" @forgot-password="handleForgotPassword" @go-to-register="handleGoToRegister" />
 </template>
 
-<script lang="ts" setup>
-import { session } from "../data/session"
+<script>
+import LoginLayout from '@/layouts/LoginLayout.vue'
+import { session } from '@/data/session'
+import { ref } from 'vue'
 
-function submit(e) {
-	const formData = new FormData(e.target)
-	session.login.submit({
-		email: formData.get("email"),
-		password: formData.get("password"),
-	})
+export default {
+  name: 'LoginPage',
+  components: {
+    LoginLayout
+  },
+  setup() {
+    const errorMessage = ref('')
+
+    const handleLogin = (loginData) => {
+      errorMessage.value = ''
+
+      session.login.submit({
+        email: loginData.email,
+        password: loginData.password
+      }).catch(error => {
+        errorMessage.value = 'خطأ في تسجيل الدخول. يرجى التحقق من البيانات المدخلة.'
+      })
+    }
+
+    return {
+      session,
+      errorMessage,
+      handleLogin,
+    }
+  }
 }
 </script>

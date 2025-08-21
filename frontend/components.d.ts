@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Header: typeof import('./src/components/Header.vue')['default']
+    ModernDialog: typeof import('./src/components/ModernDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ServerTest: typeof import('./src/components/ServerTest.vue')['default']
