@@ -26,7 +26,7 @@
           </div>
           <div class="mr-4">
             <p class="text-sm font-medium text-secondary-600">المعارة حالياً</p>
-            <p class="text-2xl font-bold text-secondary-900">45</p>
+            <p class="text-2xl font-bold text-secondary-900">{{ stats.active || 0 }}</p>
           </div>
         </div>
       </div>
@@ -38,7 +38,7 @@
           </div>
           <div class="mr-4">
             <p class="text-sm font-medium text-secondary-600">تم إرجاعها اليوم</p>
-            <p class="text-2xl font-bold text-secondary-900">12</p>
+            <p class="text-2xl font-bold text-secondary-900">{{ stats.returnedToday || 0 }}</p>
           </div>
         </div>
       </div>
@@ -50,7 +50,7 @@
           </div>
           <div class="mr-4">
             <p class="text-sm font-medium text-secondary-600">متأخرة</p>
-            <p class="text-2xl font-bold text-secondary-900">8</p>
+            <p class="text-2xl font-bold text-secondary-900">{{ stats.overdue || 0 }}</p>
           </div>
         </div>
       </div>
@@ -62,7 +62,7 @@
           </div>
           <div class="mr-4">
             <p class="text-sm font-medium text-secondary-600">متأخرة جداً</p>
-            <p class="text-2xl font-bold text-secondary-900">3</p>
+            <p class="text-2xl font-bold text-secondary-900">{{ stats.veryOverdue || 0 }}</p>
           </div>
         </div>
       </div>
@@ -105,24 +105,24 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-secondary-200">
-            <tr v-for="transaction in sampleTransactions" :key="transaction.id" class="hover:bg-secondary-50">
+            <tr v-for="transaction in transactions" :key="transaction.name" class="hover:bg-secondary-50">
               <td class="px-6 py-4">
                 <div class="flex items-center">
                   <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center ml-3">
                     <BookOpenIcon class="w-5 h-5 text-primary-600" />
                   </div>
                   <div>
-                    <div class="text-sm font-medium text-secondary-900">{{ transaction.book.title }}</div>
-                    <div class="text-sm text-secondary-500">{{ transaction.book.author }}</div>
+                    <div class="text-sm font-medium text-secondary-900">{{ transaction.article_name }}</div>
+                    <div class="text-sm text-secondary-500">{{ transaction.author || 'غير محدد' }}</div>
                   </div>
                 </div>
               </td>
               <td class="px-6 py-4">
-                <div class="text-sm font-medium text-secondary-900">{{ transaction.member.name }}</div>
-                <div class="text-sm text-secondary-500">{{ transaction.member.id }}</div>
+                <div class="text-sm font-medium text-secondary-900">{{ transaction.member_name }}</div>
+                <div class="text-sm text-secondary-500">{{ transaction.member_id }}</div>
               </td>
-              <td class="px-6 py-4 text-sm text-secondary-900">{{ formatDate(transaction.borrowDate) }}</td>
-              <td class="px-6 py-4 text-sm text-secondary-900">{{ formatDate(transaction.dueDate) }}</td>
+              <td class="px-6 py-4 text-sm text-secondary-900">{{ formatDate(transaction.issue_date) }}</td>
+              <td class="px-6 py-4 text-sm text-secondary-900">{{ formatDate(transaction.due_date) }}</td>
               <td class="px-6 py-4">
                 <span
                   :class="getStatusBadgeClass(transaction.status)"
@@ -133,8 +133,9 @@
               </td>
               <td class="px-6 py-4 text-sm font-medium space-x-2">
                 <button
-                  v-if="transaction.status === 'active'"
+                  v-if="transaction.status === 'Issued'"
                   class="text-success-600 hover:text-success-900"
+                  @click="returnBook(transaction)"
                 >
                   إرجاع
                 </button>
@@ -151,7 +152,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { 
   PlusIcon,
   BookOpenIcon,
@@ -160,55 +161,77 @@ import {
   ExclamationTriangleIcon,
   MagnifyingGlassIcon
 } from '@heroicons/vue/24/outline'
+import { transactionsResource, getTransactionStats, updateTransaction } from '../data/transactions'
 
-// Sample data
-const sampleTransactions = ref([
-  {
-    id: 1,
-    book: { title: '1984', author: 'جورج أورويل' },
-    member: { name: 'أحمد محمد', id: 'M001' },
-    borrowDate: '2024-01-15',
-    dueDate: '2024-01-29',
-    status: 'active'
-  },
-  {
-    id: 2,
-    book: { title: 'الأسود يليق بك', author: 'أحلام مستغانمي' },
-    member: { name: 'فاطمة علي', id: 'M002' },
-    borrowDate: '2024-01-10',
-    dueDate: '2024-01-24',
-    status: 'overdue'
-  },
-  {
-    id: 3,
-    book: { title: 'مئة عام من العزلة', author: 'غابرييل غارسيا ماركيز' },
-    member: { name: 'محمد حسن', id: 'M003' },
-    borrowDate: '2024-01-12',
-    dueDate: '2024-01-26',
-    status: 'returned'
+// Transactions data
+const transactions = ref([])
+const stats = ref({
+  active: 0,
+  returnedToday: 0,
+  overdue: 0,
+  veryOverdue: 0
+})
+
+// Load transaction data
+const loadTransactions = async () => {
+  // Load transactions
+  if (transactionsResource.data) {
+    transactions.value = transactionsResource.data
   }
-])
+  
+  // Load stats
+  const statsResponse = await getTransactionStats()
+  if (statsResponse.success) {
+    stats.value = statsResponse.data
+  }
+}
+
+// Load data when component is mounted
+onMounted(() => {
+  loadTransactions()
+})
 
 // Methods
 const formatDate = (dateString) => {
+  if (!dateString) return 'غير محدد'
   return new Date(dateString).toLocaleDateString('ar')
+}
+
+const returnBook = async (transaction) => {
+  try {
+    const response = await updateTransaction({
+      name: transaction.name,
+      status: 'Returned',
+      returned_date: new Date().toISOString().split('T')[0]
+    })
+    
+    if (response.success) {
+      await loadTransactions()
+    }
+  } catch (error) {
+    console.error('Error returning book:', error)
+  }
 }
 
 const getStatusText = (status) => {
   const statusMap = {
-    'active': 'معارة',
-    'returned': 'مُرجعة',
-    'overdue': 'متأخرة'
+    'Issued': 'معارة',
+    'Returned': 'مُرجعة',
+    'Overdue': 'متأخرة',
+    'Lost': 'مفقودة',
+    'Overdue, Lost': 'متأخرة ومفقودة'
   }
   return statusMap[status] || status
 }
 
 const getStatusBadgeClass = (status) => {
-  const classMap = {
-    'active': 'bg-primary-100 text-primary-800',
-    'returned': 'bg-success-100 text-success-800',
-    'overdue': 'bg-danger-100 text-danger-800'
+  const classes = {
+    'Issued': 'bg-blue-100 text-blue-800',
+    'Returned': 'bg-green-100 text-green-800',
+    'Overdue': 'bg-yellow-100 text-yellow-800',
+    'Lost': 'bg-red-100 text-red-800',
+    'Overdue, Lost': 'bg-purple-100 text-purple-800'
   }
-  return classMap[status] || 'bg-secondary-100 text-secondary-800'
+  return classes[status] || 'bg-gray-100 text-gray-800'
 }
 </script>

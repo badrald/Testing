@@ -8,6 +8,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    FancyDataTable: typeof import('./src/components/FancyDataTable.vue')['default']
+    FormInput: typeof import('./src/components/FormInput.vue')['default']
     Header: typeof import('./src/components/Header.vue')['default']
     ModernDialog: typeof import('./src/components/ModernDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

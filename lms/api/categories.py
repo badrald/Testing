@@ -8,14 +8,10 @@ from frappe import _
 @frappe.whitelist()
 def get_all_categories():
     """Get all categories with book counts"""
-    categories = frappe.db.sql("""
-        SELECT c.name, c.category_name, c.description, COUNT(b.name) as books_count
-        FROM tabCategory c
-        LEFT JOIN tabBook b ON b.category = c.name
-        GROUP BY c.name, c.category_name, c.description
-        ORDER BY c.category_name
-    """, as_dict=True)
-    
+    categories = frappe.get_all("Category", fields=[
+        "name", 
+        "category_name", 
+    ], order_by="category_name")
     return {"success": True, "data": categories}
 
 

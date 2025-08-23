@@ -11,9 +11,6 @@ def get_all_authors():
     authors = frappe.get_all("Author", fields=[
         "name", 
         "author_name", 
-        "biography",
-        "birth_date",
-        "nationality"
     ], order_by="author_name")
     return {"success": True, "data": authors}
 

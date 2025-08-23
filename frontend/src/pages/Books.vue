@@ -77,10 +77,10 @@
 
       <!-- Body -->
       <form @submit.prevent="addBook" class="space-y-4">
-        <Input v-model="newBook.article_name" label="Title" />
-        <Input v-model="newBook.isbn" label="ISBN" />
-        <Input v-model="newBook.publisher" label="Publisher" />
-        <Input v-model="newBook.status" label="Status" />
+        <Input v-model="newBook.article_name" label="Title" class="text-gray-900" />
+        <Input v-model="newBook.isbn" label="ISBN" class="text-gray-900" />
+        <Input v-model="newBook.publisher" label="Publisher" class="text-gray-900" />
+        <Input v-model="newBook.status" label="Status" class="text-gray-900" />
       </form>
 
       <!-- Actions -->
@@ -106,8 +106,8 @@
 
       <!-- Actions -->
       <template #actions>
-        <Button @click="showEditBookModal = false" theme="gray" class="mr-2">Cancel</Button>
-        <Button @click="updateBook" theme="primary">Update</Button>
+        <Button @click="showEditBookModal = false" theme="gray" class=" bg-red-700 p-3 ml-3 text-white">إلغاء</Button>
+        <Button @click="updateBook" theme="primary" class="bg-primary-600 text-white p-3">تحديث</Button>
       </template>
     </ModernDialog>
 
@@ -137,8 +137,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { createResource, Button, Card, Input, Badge, FeatherIcon, frappeRequest } from 'frappe-ui'
+import { Button, Card, Input, Badge, FeatherIcon } from 'frappe-ui'
 import ModernDialog from '../components/ModernDialog.vue'
+import { booksResource, addBook as addBookApi, updateBook as updateBookApi, deleteBook as deleteBookApi } from '../data/books'
 
 const showAddBookModal = ref(false)
 const showEditBookModal = ref(false)
@@ -166,10 +167,6 @@ const deleteBookData = ref({
   article_name: '',
 })
 
-const booksResource = createResource({
-  url: "lms.api.books.get_all_books",
-  auto: true,
-})
 const filteredBooks = computed(() => {
   if (!booksResource.data || !booksResource.data.data) return []
   let books = booksResource.data.data
@@ -207,17 +204,10 @@ const getStatusText = (status) => {
 
 
 const addBook = async () => {
-  try {
-    await frappeRequest({
-      method: 'POST',
-      url: 'lms.api.books.add_book',
-      data: newBook.value,
-    })
-    booksResource.reload()
+  const response = await addBookApi(newBook.value)
+  if (response.success) {
     showAddBookModal.value = false
     newBook.value = { article_name: '', isbn: '', publisher: '', status: 'Active' }
-  } catch (e) {
-    console.error('Error adding book:', e)
   }
 }
 
@@ -227,16 +217,9 @@ const editBook = (book) => {
 }
 
 const updateBook = async () => {
-  try {
-    await frappeRequest({
-      method: 'PUT',
-      url: 'lms.api.books.update_book',
-      data: editBookData.value,
-    })
-    booksResource.reload()
+  const response = await updateBookApi(editBookData.value)
+  if (response.success) {
     showEditBookModal.value = false
-  } catch (e) {
-    console.error('Error updating book:', e)
   }
 }
 
@@ -246,16 +229,9 @@ const deleteBook = (book) => {
 }
 
 const confirmDeleteBook = async () => {
-  try {
-    await frappeRequest({
-      method: 'DELETE',
-      url: 'lms.api.books.delete_book',
-      data: { name: deleteBookData.value.name },
-    })
-    booksResource.reload()
+  const response = await deleteBookApi(deleteBookData.value.name)
+  if (response.success) {
     showDeleteBookModal.value = false
-  } catch (e) {
-    console.error('Error deleting book:', e)
   }
 }
 </script>

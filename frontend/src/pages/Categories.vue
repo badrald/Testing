@@ -27,12 +27,14 @@
     </Card>
 
     <!-- Categories Table -->
-    <DataTable :columns="columns" :data="filteredCategories">
-      <template #cell-actions="{ row }">
-        <Button @click="editCategory(row)" size="sm" theme="gray">Edit</Button>
-        <Button @click="deleteCategory(row)" size="sm" theme="red" class="ml-2">Delete</Button>
+    <FancyDataTable :columns="columns" :data="filteredCategories" :page-size="12" :sortable="true">
+      <template #actions="{ row }">
+        <div class="flex space-x-2">
+          <Button @click="editCategory(row)" size="sm" theme="gray">Edit</Button>
+          <Button @click="deleteCategory(row)" size="sm" theme="red" class="ml-2">Delete</Button>
+        </div>
       </template>
-    </DataTable>
+    </FancyDataTable>
 
     <Dialog v-model="showAddCategoryModal" title="Add Category">
       <form @submit.prevent="addCategory">
@@ -50,7 +52,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { createResource, Button, Card, DataTable, Dialog, Input, FeatherIcon } from 'frappe-ui'
+import { Button, Card, Dialog, Input, FeatherIcon } from 'frappe-ui'
+import FancyDataTable from '../components/FancyDataTable.vue'
+import { categoriesResource, addCategory as addCategoryApi, updateCategory as updateCategoryApi, deleteCategory as deleteCategoryApi } from '../data/categories'
 
 const showAddCategoryModal = ref(false)
 const searchQuery = ref('')
@@ -60,37 +64,40 @@ const newCategory = ref({
 })
 
 const columns = ref([
-  { key: 'category_name', label: 'Name' },
-  { key: 'actions', label: 'Actions' },
+  { key: 'category_name', label: 'الاسم', sortable: true },
 ])
 
-const categoriesResource = createResource({
-  url: "lms.lms.api.category.get_categories",
-  auto: true,
-})
 
 const filteredCategories = computed(() => {
   if (!categoriesResource.data) return []
   return categoriesResource.data.filter(category => {
-    const matchesSearch = !searchQuery.value || 
+    const matchesSearch = !searchQuery.value ||
       category.category_name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    
+
     return matchesSearch
   })
 })
 
-const addCategory = () => {
-  // To be implemented
-  console.log("addCategory", newCategory.value)
+const addCategory = async () => {
+  const response = await addCategoryApi(newCategory.value)
+  if (response.success) {
+    showAddCategoryModal.value = false
+    newCategory.value = { category_name: '' }
+  }
 }
 
 const editCategory = (category) => {
-  // To be implemented
+  // Implementation for editing a category
   console.log("editCategory", category)
+  // You can add edit functionality here
 }
 
-const deleteCategory = (category) => {
-  // To be implemented
-  console.log("deleteCategory", category)
+const deleteCategory = async (category) => {
+  if (confirm(`Are you sure you want to delete ${category.category_name}?`)) {
+    const response = await deleteCategoryApi(category.name)
+    if (response.success) {
+      // Category deleted successfully
+    }
+  }
 }
 </script>

@@ -14,43 +14,15 @@
       </div>
     </div>
 
-    <!-- Filters and Search -->
-    <Card>
-      <div class="card-body">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <!-- Search -->
-          <div class="md:col-span-2">
-            <Input v-model="searchQuery" placeholder="البحث بالاسم، البريد الإلكتروني، أو رقم العضوية..." />
-          </div>
-
-          <!-- Membership Type Filter -->
-          <div>
-            <select v-model="selectedMembershipType" class="w-full form-select">
-              <option value="">جميع الأنواع</option>
-              <option value="Normal">Normal</option>
-              <option value="VIP">VIP</option>
-            </select>
-          </div>
-
-          <!-- Status Filter -->
-          <div>
-            <select v-model="selectedStatus" class="w-full form-select">
-              <option value="">جميع الحالات</option>
-              <option value="1">نشط</option>
-              <option value="0">منتهي</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </Card>
-
     <!-- Members Table -->
-    <DataTable :columns="columns" :data="filteredMembers">
-      <template #cell-actions="{ row }">
-        <Button @click="editMember(row)" size="sm" theme="gray">Edit</Button>
-        <Button @click="deleteMember(row)" size="sm" theme="red" class="ml-2">Delete</Button>
+    <FancyDataTable :columns="columns" :data="filteredMembers" :page-size="12" :sortable="true">
+      <template #actions="{ row }">
+        <div class="flex space-x-2">
+          <Button @click="editMember(row)" size="sm" theme="gray">Edit</Button>
+          <Button @click="deleteMember(row)" size="sm" theme="red" class="ml-2">Delete</Button>
+        </div>
       </template>
-    </DataTable>
+    </FancyDataTable>
 
     <Dialog v-model="showAddMemberModal" title="Add Member">
       <form @submit.prevent="addMember">
@@ -71,7 +43,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { createResource, Button, Card, DataTable, Dialog, Input, FeatherIcon } from 'frappe-ui'
+import { Button, Card, Dialog, Input, FeatherIcon } from 'frappe-ui'
+import FancyDataTable from '../components/FancyDataTable.vue'
+import { membersResource, addMember as addMemberApi, updateMember as updateMemberApi, deleteMember as deleteMemberApi } from '../data/members'
 
 const showAddMemberModal = ref(false)
 const searchQuery = ref('')
@@ -86,46 +60,54 @@ const newMember = ref({
 })
 
 const columns = ref([
-  { key: 'memeber_name', label: 'Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'phone_number', label: 'Phone' },
-  { key: 'member_type', label: 'Type' },
-  { key: 'is_membership_valid', label: 'Valid Membership' },
-  { key: 'actions', label: 'Actions' },
+  { key: 'memeber_name', label: 'الاسم', sortable: true },
+  { key: 'email', label: 'البريد', sortable: true },
+  { key: 'phone_number', label: 'الهاتف', sortable: false },
+  { key: 'member_type', label: 'النوع', sortable: false },
+  { key: 'is_membership_valid', label: 'ساري', sortable: false },
 ])
 
-const membersResource = createResource({
-  url: "lms.lms.doctype.member.member.get_members",
-  auto: true,
-})
 
 const filteredMembers = computed(() => {
   if (!membersResource.data) return []
   return membersResource.data.filter(member => {
-    const matchesSearch = !searchQuery.value || 
+    const matchesSearch = !searchQuery.value ||
       member.memeber_name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       member.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       member.member_id.toLowerCase().includes(searchQuery.value.toLowerCase())
-    
+
     const matchesType = !selectedMembershipType.value || member.member_type === selectedMembershipType.value
     const matchesStatus = !selectedStatus.value || member.is_membership_valid === parseInt(selectedStatus.value)
-    
+
     return matchesSearch && matchesType && matchesStatus
   })
 })
 
-const addMember = () => {
-  // To be implemented
-  console.log("addMember", newMember.value)
+const addMember = async () => {
+  const response = await addMemberApi(newMember.value)
+  if (response.success) {
+    showAddMemberModal.value = false
+    newMember.value = {
+      memeber_name: '',
+      email: '',
+      phone_number: '',
+      member_type: 'Normal',
+    }
+  }
 }
 
 const editMember = (member) => {
-  // To be implemented
+  // Implementation for editing a member
   console.log("editMember", member)
+  // You can add edit functionality here
 }
 
-const deleteMember = (member) => {
-  // To be implemented
-  console.log("deleteMember", member)
+const deleteMember = async (member) => {
+  if (confirm(`Are you sure you want to delete ${member.memeber_name}?`)) {
+    const response = await deleteMemberApi(member.name)
+    if (response.success) {
+      // Member deleted successfully
+    }
+  }
 }
 </script>
