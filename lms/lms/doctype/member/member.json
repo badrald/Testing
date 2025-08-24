@@ -1,6 +1,5 @@
 {
  "actions": [],
- "allow_rename": 1,
  "autoname": "field:member_id",
  "creation": "2025-08-10 20:46:54.992759",
  "doctype": "DocType",
@@ -51,7 +50,8 @@
   {
    "fieldname": "email",
    "fieldtype": "Data",
-   "label": "Email"
+   "label": "Email",
+   "options": "User"
   },
   {
    "fieldname": "member_id",
@@ -76,7 +76,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-13 11:52:05.771344",
+ "modified": "2025-08-23 10:07:28.551425",
  "modified_by": "Administrator",
  "module": "LMS",
  "name": "Member",

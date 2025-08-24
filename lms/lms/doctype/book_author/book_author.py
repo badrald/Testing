@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class ArticleAuthor(Document):
+class BookAuthor(Document):
 	pass

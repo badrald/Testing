@@ -1,5 +1,5 @@
 import router from "@/router"
-import { createResource } from "frappe-ui"
+import { createResource, setConfig } from "frappe-ui"
 import { computed, reactive } from "vue"
 
 import { userResource } from "./user"
@@ -7,10 +7,22 @@ import { userResource } from "./user"
 export function sessionUser() {
 	const cookies = new URLSearchParams(document.cookie.split("; ").join("&"))
 	let _sessionUser = cookies.get("user_id")
+	setConfig("fetchOptions", {
+		credentials: "include",
+		headers: {
+			"X-Frappe-CSRF-Token": window.csrf_token || ""
+		}
+	})
 	if (_sessionUser === "Guest") {
 		_sessionUser = null
 	}
 	return _sessionUser
+}
+
+export function sessionCSRFToken() {
+	const cookies = new URLSearchParams(document.cookie.split("; ").join("&"))
+	console.log(cookies.get("csrf_token"))
+	return cookies.get("csrf_token")
 }
 
 export const session = reactive({
@@ -24,7 +36,14 @@ export const session = reactive({
 		},
 		onSuccess(data) {
 			userResource.reload()
+			alert(data.message);
 			session.user = sessionUser()
+			// Get CSRF token set by server on successful login and expose it globally
+			const token = sessionCSRFToken()
+			if (token) {
+				window.csrf_token = token
+				session.csrf_token = token
+			}
 			session.login.reset()
 			router.replace(data.default_route || "/")
 		},
@@ -34,9 +53,22 @@ export const session = reactive({
 		onSuccess() {
 			userResource.reset()
 			session.user = sessionUser()
+			// Clear csrf token on logout
+			window.csrf_token = null
+			session.csrf_token = null
 			router.replace({ name: "Login" })
 		},
 	}),
 	user: sessionUser(),
+	csrf_token: sessionCSRFToken(),
 	isLoggedIn: computed(() => !!session.user),
 })
+
+// Initialize global csrf token on first load if already logged in via cookies
+const initialCsrf = sessionCSRFToken()
+if (initialCsrf) {
+    window.csrf_token = initialCsrf
+}
+
+
+

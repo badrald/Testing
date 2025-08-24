@@ -11,11 +11,11 @@
   "lbl_artical",
   "isbn",
   "article_name",
-  "status",
-  "total_copies",
   "available_copies",
   "column_break_foiu",
   "publisher",
+  "status",
+  "total_copies",
   "authros_information_section",
   "authors_names",
   "section_break_pmua",
@@ -27,8 +27,7 @@
  "fields": [
   {
    "fieldname": "lbl_artical",
-   "fieldtype": "Column Break",
-   "label": "Book"
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "status",
@@ -59,8 +58,7 @@
   },
   {
    "fieldname": "column_break_foiu",
-   "fieldtype": "Column Break",
-   "label": "Publisher Information "
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "section_break_pmua",
@@ -84,10 +82,10 @@
   },
   {
    "fieldname": "authors_names",
-   "fieldtype": "Table MultiSelect",
-   "in_standard_filter": 1,
+   "fieldtype": "Table",
+   "in_filter": 1,
    "label": "Authors Names",
-   "options": "Article Author"
+   "options": "Book Author"
   },
   {
    "fetch_from": "author.name1",
@@ -120,7 +118,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-13 10:09:32.795394",
+ "modified": "2025-08-23 12:48:33.470872",
  "modified_by": "Administrator",
  "module": "LMS",
  "name": "Book",

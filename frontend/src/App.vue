@@ -77,6 +77,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { toasts, addToast, removeToast } from './utils/toast'
 import { useAppStore } from './stores/app'
 import Sidebar from './components/Sidebar.vue'
 import Header from './components/Header.vue'
@@ -92,33 +93,13 @@ import {
 // Stores
 const appStore = useAppStore()
 
-// Toast notifications
-const toasts = ref([])
+// Toast notifications are provided by utils/toast.js
 
 // Computed properties
 const sidebarOpen = computed(() => appStore.sidebarOpen)
 const isLoading = ref(false)
 
-// Methods
-const removeToast = (id) => {
-  const index = toasts.value.findIndex(toast => toast.id === id)
-  if (index > -1) {
-    toasts.value.splice(index, 1)
-  }
-}
-
-const addToast = (toast) => {
-  const newToast = {
-    id: Date.now(),
-    ...toast,
-  }
-  toasts.value.push(newToast)
-
-  // Auto remove after 5 seconds
-  setTimeout(() => {
-    removeToast(newToast.id)
-  }, 5000)
-}
+// Methods are imported from utils/toast.js
 
 const getToastBorderClass = (type) => {
   switch (type) {

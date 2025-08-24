@@ -3,7 +3,7 @@ import { frappeRequest } from 'frappe-ui'
 
 // Resource for fetching all categories
 export const categoriesResource = createResource({
-  url: "lms.lms.api.category.get_all_categories",
+  url: "lms.api.categories.get_all_categories",
   auto: true,
 })
 

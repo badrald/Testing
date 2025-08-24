@@ -2,85 +2,82 @@
     <transition name="modal">
         <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center p-4"
             @click.self="onBackdropClick">
-            <!-- خلفية ضبابية رسمية -->
-            <div
-                class="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-blue-900/50 to-black/60 backdrop-blur-md">
-            </div>
+            <!-- خلفية ناعمة ومتدرجة -->
+            <div class="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
 
             <!-- المودال الرئيسي -->
-            <div
-                class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-slate-200 modal-container">
-                <!-- شريط علوي رسمي -->
-                <div
-                    class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-700 via-blue-600 to-slate-800">
-                </div>
+            <div class="relative bg-white dark:bg-gray-900 rounded-3xl shadow-xl w-full mx-4 overflow-hidden modal-container"
+                :class="dialogWidthClass">
 
-                <!-- زر الإغلاق -->
                 <button v-if="closable" @click="closeDialog"
-                    class="absolute top-5 right-6 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 transition-all duration-200 flex items-center justify-center group z-10 shadow-md border border-slate-300">
-                    <svg class="w-5 h-5 text-slate-600 group-hover:text-slate-800 transition-colors" fill="none"
-                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 dark:bg-red-800 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group z-10">
+                    <svg class="w-4 h-4 text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200 transition-colors"
+                        fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
+                <!-- زر الإغلاق المحدث -->
 
-                <!-- الجزء العلوي -->
-                <div
-                    class="relative bg-gradient-to-br from-slate-50 to-blue-50/30 px-8 pt-8 pb-6 border-b border-slate-200">
-                    <!-- الأيقونة والعنوان -->
-                    <div class="flex items-center mb-6">
 
-                        <div class="flex-1">
-                            <div class="w-16 h-0.5 bg-gradient-to-r from-slate-600 to-blue-600 rounded-full"></div>
-                            <h2 class="text-2xl font-bold text-slate-900 mb-2 tracking-tight">
+
+                <!-- الجزء العلوي المبسط -->
+                <div class="px-6 pt-6 pb-4">
+                    <div class="flex items-start">
+                        <!-- العنوان -->
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white leading-6">
                                 <slot name="title">{{ title }}</slot>
-                            </h2>
+                            </h3>
+                            <p v-if="$slots.description" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                <slot name="description" />
+                            </p>
                         </div>
-                        <div class="relative">
+
+                        <!-- الأيقونة -->
+                        <div class="flex-shrink-0 mr-4">
                             <div
-                                class="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-800 to-blue-900 flex items-center justify-center shadow-xl mr-4 border border-slate-300">
+                                class="w-12 h-12  rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 flex items-center justify-center shadow-lg">
                                 <slot name="icon">
-                                    <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" stroke-width="1.5"
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="1.5"
                                         viewBox="0 0 24 24">
                                         <path
-                                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                            d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                                     </svg>
-                                    <!-- أيقونة مجلد رسمية -->
                                 </slot>
                             </div>
-                         
                         </div>
+
 
                     </div>
                 </div>
 
                 <!-- محتوى الرسالة -->
-                <div class="px-8 py-6 bg-white">
-                    <div class="text-slate-700 text-base leading-relaxed font-medium">
+                <div class="px-6 pb-6">
+                    <div v-if="$slots.media || layout === 'split'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <section class="lg:col-span-2 order-1 lg:order-2">
+                            <div class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                                <slot />
+                            </div>
+                        </section>
+                        <aside class="order-1 lg:order-2">
+                            <slot name="media" />
+                        </aside>
+                    </div>
+                    <div v-else class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                         <slot />
                     </div>
                 </div>
 
                 <!-- منطقة الأزرار -->
-                <div class="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50/20 border-t border-slate-200">
-                    <div class="flex justify-end space-x-3">
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-end space-x-3 rtl:space-x-reverse">
                         <slot name="actions">
                             <button v-if="closable" @click="closeDialog"
-                                class="px-6 py-3 rounded-lg bg-gradient-to-r from-slate-700 to-slate-800 text-white hover:from-slate-800 hover:to-slate-900 transition-all duration-200 font-medium shadow-lg border border-slate-600">
+                                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
                                 إغلاق
                             </button>
                         </slot>
                     </div>
-                </div>
-
-                <!-- خط جانبي رسمي -->
-                <div
-                    class="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-24 bg-gradient-to-b from-slate-600 via-blue-600 to-slate-800 rounded-r-md">
-                </div>
-
-                <!-- زخرفة زاوية -->
-                <div class="absolute bottom-0 right-0 w-20 h-20 opacity-5">
-                    <div class="w-full h-full bg-gradient-to-tl from-slate-800 to-transparent rounded-tl-full"></div>
                 </div>
             </div>
         </div>
@@ -88,11 +85,15 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
     modelValue: { type: Boolean, required: true },
     title: { type: String, default: "حوار النظام" },
     persistent: { type: Boolean, default: false },
-    closable: { type: Boolean, default: true }
+    closable: { type: Boolean, default: true },
+    size: { type: String, default: 'md' }, // sm, md, lg, xl
+    layout: { type: String, default: 'default' }, // default | split
 })
 
 const emit = defineEmits(["update:modelValue"])
@@ -106,36 +107,53 @@ const onBackdropClick = () => {
         closeDialog()
     }
 }
+
+const dialogWidthClass = computed(() => {
+    switch (props.size) {
+        case 'sm':
+            return 'max-w-md'
+        case 'lg':
+            return 'max-w-2xl'
+        case 'xl':
+            return 'max-w-4xl'
+        case 'md':
+        default:
+            return 'max-w-lg'
+    }
+})
 </script>
 
 <style scoped>
-/* تأثيرات الانتقال الرسمية */
+/* تأثيرات الانتقال المحسنة */
 .modal-enter-active {
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .modal-leave-active {
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.6, 1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
 }
 
 .modal-enter-from {
     opacity: 0;
-    transform: scale(0.9) translateY(-20px);
+    transform: scale(0.95) translateY(-10px);
 }
 
 .modal-leave-to {
     opacity: 0;
-    transform: scale(0.95) translateY(10px);
+    transform: scale(0.98) translateY(5px);
 }
 
 /* تأثير ظهور المودال */
 .modal-container {
-    animation: modalFadeIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
-@keyframes modalFadeIn {
+@keyframes modalSlideIn {
     0% {
-        transform: scale(0.9) translateY(-20px);
+        transform: scale(0.95) translateY(-10px);
         opacity: 0;
     }
 
@@ -145,32 +163,13 @@ const onBackdropClick = () => {
     }
 }
 
-/* تأثيرات تفاعلية رسمية */
+/* تأثير hover ناعم */
 .modal-container:hover {
     transform: translateY(-1px);
-    transition: transform 0.2s ease;
-}
-
-/* إطار رسمي خفيف */
-.modal-container::before {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: -1px;
-    right: -1px;
-    bottom: -1px;
-    background: linear-gradient(135deg,
-            rgba(71, 85, 105, 0.1),
-            rgba(37, 99, 235, 0.1),
-            rgba(30, 41, 59, 0.1));
-    border-radius: 1rem;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.modal-container:hover::before {
-    opacity: 1;
+    box-shadow:
+        0 32px 64px -12px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* تحسينات للشاشات الصغيرة */
@@ -178,24 +177,16 @@ const onBackdropClick = () => {
     .modal-container {
         margin: 1rem;
         max-width: calc(100% - 2rem);
+        border-radius: 1.5rem;
     }
 }
 
-/* تأثير التركيز الرسمي */
+/* تأثير التركيز المحسن */
 button:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
-/* ظلال رسمية متدرجة */
-.modal-container {
-    box-shadow:
-        0 20px 40px -8px rgba(15, 23, 42, 0.25),
-        0 8px 16px -4px rgba(37, 99, 235, 0.1),
-        0 0 0 1px rgba(148, 163, 184, 0.1);
-}
-
-/* تأثيرات الأزرار */
+/* تأثير hover للأزرار */
 button {
     position: relative;
     overflow: hidden;
@@ -204,33 +195,90 @@ button {
 button::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
 }
 
 button:hover::before {
-    left: 100%;
+    width: 200%;
+    height: 200%;
 }
 
-/* خطوط فاصلة رسمية */
-.border-slate-200 {
-    border-color: rgb(226 232 240 / 0.8);
+/* تحسين الظلال في الوضع المظلم */
+@media (prefers-color-scheme: dark) {
+    .modal-container {
+        box-shadow:
+            0 25px 50px -12px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .modal-container:hover {
+        box-shadow:
+            0 32px 64px -12px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
 }
 
-/* تأثير النص */
-h2 {
-    text-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
+/* تأثير النبض للأيقونة */
+.modal-container .bg-gradient-to-br {
+    animation: iconPulse 2s ease-in-out infinite;
 }
 
-/* تدرج الخلفية للنصوص */
-.text-slate-700 {
-    background: linear-gradient(135deg, #374151, #4b5563);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+@keyframes iconPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+    }
+}
+
+/* تحسين المساحات والخط */
+.leading-relaxed {
+    line-height: 1.7;
+}
+
+/* تأثير انتقال ناعم للخلفية */
+.bg-black\/20 {
+    animation: backdropFadeIn 0.3s ease-out;
+}
+
+@keyframes backdropFadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* تحسين زر الإغلاق */
+.modal-container button:first-of-type {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* تأثير التمرير على الأزرار */
+button {
+    transform: translateZ(0);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
 }
 </style>

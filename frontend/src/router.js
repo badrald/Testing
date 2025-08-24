@@ -20,6 +20,14 @@ const routes = [
 		}
 	},
 	{
+		path: "/books/:id",
+		name: "BookDetails",
+		component: () => import("@/pages/BookDetails.vue"),
+		meta: {
+			title: 'تفاصيل الكتاب - نظام إدارة المكتبة'
+		}
+	},
+	{
 		path: "/members",
 		name: "Members",
 		component: () => import("@/pages/Members.vue"),

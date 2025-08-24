@@ -1,32 +1,28 @@
 <template>
   <div class="space-y-2">
-    <label 
-      v-if="label" 
+    <label
+      v-if="label"
       :for="id || name"
       class="block text-sm font-medium text-gray-700 dark:text-gray-300"
     >
       {{ label }}
       <span v-if="required" class="text-red-500">*</span>
     </label>
-    
+
     <div class="relative rounded-md shadow-sm">
       <!-- Leading Icon -->
       <div v-if="leadingIcon" class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
         <component :is="leadingIcon" class="h-5 w-5 text-gray-400" />
       </div>
-      
-      <!-- Input Field -->
-      <input
+
+      <!-- Select Field -->
+      <select
         :id="id || name"
         :name="name"
-        :type="type"
-        :value="modelValue"
-        :placeholder="placeholder"
         :required="required"
         :disabled="disabled"
-        :list="suggestions && suggestions.length ? datalistId : null"
         :class="[
-          'block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
+          'block w-full rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
           'focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 focus:border-transparent',
           'transition duration-200 ease-in-out',
           'disabled:opacity-50 disabled:cursor-not-allowed',
@@ -35,36 +31,42 @@
           error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600',
           size === 'sm' ? 'px-3 py-2 text-sm' : 'px-4 py-2',
         ]"
-        @input="$emit('update:modelValue', $event.target.value)"
+        :value="modelValue"
+        @change="onChange"
         @blur="$emit('blur', $event)"
-      />
+      >
+        <option v-if="placeholder" disabled :value="placeholderValue" hidden>{{ placeholder }}</option>
+        <option
+          v-for="opt in normalizedOptions"
+          :key="String(opt.value)"
+          :value="opt.value"
+          :disabled="opt.disabled"
+        >
+          {{ opt.label }}
+        </option>
+      </select>
 
-      <!-- Datalist Suggestions -->
-      <datalist v-if="suggestions && suggestions.length" :id="datalistId">
-        <option v-for="s in suggestions" :key="s" :value="s" />
-      </datalist>
-      
       <!-- Trailing Icon -->
       <div v-if="trailingIcon" class="absolute inset-y-0 left-0 flex items-center pl-3">
         <component :is="trailingIcon" class="h-5 w-5 text-gray-400" />
       </div>
-      
+
       <!-- Clear Button -->
       <button
-        v-if="modelValue && clearable"
+        v-if="clearable && (modelValue !== null && modelValue !== undefined && modelValue !== '')"
         type="button"
         class="absolute inset-y-0 left-0 flex items-center pl-3"
-        @click="$emit('update:modelValue', '')"
+        @click="$emit('update:modelValue', clearValue)"
       >
         <XMarkIcon class="h-4 w-4 text-gray-400 hover:text-gray-500" />
       </button>
     </div>
-    
+
     <!-- Error Message -->
     <p v-if="error" class="mt-1 text-sm text-red-600 dark:text-red-500">
       {{ error }}
     </p>
-    
+
     <!-- Helper Text -->
     <p v-if="helperText" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
       {{ helperText }}
@@ -73,24 +75,17 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { XMarkIcon } from '@heroicons/vue/24/outline';
+import { computed } from 'vue'
+import { XMarkIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
-  // Basic props
   modelValue: {
-    type: [String, Number],
+    type: [String, Number, Boolean, Object, null],
     default: '',
   },
   name: {
     type: String,
     required: true,
-  },
-  type: {
-    type: String,
-    default: 'text',
-    validator: (value) => 
-      ['text', 'email', 'password', 'number', 'tel', 'url', 'search', 'date', 'time', 'datetime-local'].includes(value),
   },
   label: {
     type: String,
@@ -137,20 +132,43 @@ const props = defineProps({
     type: Object,
     default: null,
   },
-  // Optional suggestions to show as user types (HTML datalist)
-  suggestions: {
+  // Options can be strings or objects { label, value, disabled? }
+  options: {
     type: Array,
     default: () => [],
   },
-});
+  // Value used when clearing/placeholder
+  clearValue: {
+    type: [String, Number, Boolean, Object, null],
+    default: '',
+  },
+})
 
-defineEmits(['update:modelValue', 'blur']);
+const placeholderValue = ''
 
-// Unique datalist id per component instance
-const uniqueId = Math.random().toString(36).slice(2, 8)
-const datalistId = computed(() => `${(props.id && props.id.length ? props.id : (props.name || 'input'))}-list-${uniqueId}`)
+const normalizedOptions = computed(() => {
+  return props.options.map((opt) => {
+    if (typeof opt === 'string' || typeof opt === 'number' || typeof opt === 'boolean') {
+      return { label: String(opt), value: opt }
+    }
+    const { label, value, disabled } = opt || {}
+    return {
+      label: label ?? String(value ?? ''),
+      value: value ?? '',
+      disabled: !!disabled,
+    }
+  })
+})
+
+const emit = defineEmits(['update:modelValue', 'change', 'blur'])
+
+function onChange(e) {
+  const value = e.target.value
+  emit('update:modelValue', value)
+  emit('change', value)
+}
 </script>
 
 <style scoped>
-/* Add any custom styles here */
+/* Custom styles (if needed) */
 </style>

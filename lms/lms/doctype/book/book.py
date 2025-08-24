@@ -8,9 +8,6 @@ from frappe import _
 
 
 class Book(Document):
-    def get_books(self):
-        books = frappe.get_all("Book", fields=["name", "article_name", "isbn", "publisher", "status", "cover"])
-        return books
 
     @frappe.whitelist()
     def fetch_book_details_from_isbn(self):
@@ -51,14 +48,8 @@ class Book(Document):
         # Prefer higher-res image if available
         category = categories[0] if categories else ''
         
-        
-        cover_url = (
-            image_links.get('extraLarge')
-            or image_links.get('large')
-            or image_links.get('medium')
-            or image_links.get('thumbnail')
-            or image_links.get('smallThumbnail')
-        )
+
+        cover_url = image_links.get('thumbnail').split("&zoom=1")[0]
 
         # Ensure Author docs exist (by author_name) and collect their docnames
         author_docnames = []
@@ -73,8 +64,7 @@ class Book(Document):
                 })
                 author_doc.insert(ignore_permissions=True)
                 author_docnames.append(author_doc.name)
-                author_doc.save(ignore_permissions=True)
-        
+
        
         # Only create category if it exists and is not empty
         if category:
@@ -85,7 +75,6 @@ class Book(Document):
                     "category_name": category
                 })
                 category_doc.insert(ignore_permissions=True)
-                category_doc.save(ignore_permissions=True)
 
         # Ensure Publisher exists (by publisher_name)
         if publisher_name:
@@ -96,7 +85,6 @@ class Book(Document):
                     "publisher_name": publisher_name
                 })
                 new_publisher.insert(ignore_permissions=True)
-                new_publisher.save(ignore_permissions=True)
 
 
         # Prepare updates
@@ -109,18 +97,22 @@ class Book(Document):
             updated_fields['cover'] = cover_url
         if publisher_name:
             updated_fields['publisher'] = publisher_name
-        if authors:
-            updated_fields['author_name'] = ', '.join(authors)  # Join multiple authors
-        if author_docnames:
-            updated_fields['author_docnames'] = author_docnames
         if category: 
             updated_fields['category'] = category
 
-
+        # Clear existing authors and add new ones through child table
+        self.authors_names = []
+        author_rows = []
+        for i, author_docname in enumerate(author_docnames):
+            row = self.append("authors_names", {})
+            row.author = author_docname
+            row.role = "Author" if i == 0 else "Co-Author"
+            author_rows.append({"author": author_docname, "role": row.role})
 
         return {
             'updated': True,
             'fields': updated_fields,
+            'authors': author_rows,
         }
 
     @frappe.whitelist()
@@ -128,59 +120,30 @@ class Book(Document):
         """Clear fields populated from external sources, keeping only ISBN."""
         fields_to_clear = {
             'article_name': None,
-            'authors_names': None,
             'publisher': None,
             'description': None,
             'cover': None,
             'category': None,
         }
         self.update(fields_to_clear)
+        # Clear authors child table
+        self.authors_names = []
         return {'cleared': True}
 
+    def before_save(self):
+        """Before saving, ensure all authors in the child table have proper roles"""
+        if self.authors_names:
+            seen_authors = set()
+            for i, author_row in enumerate(self.authors_names):
+                # Validate no duplicate authors within the same book
+                author_name = (author_row.author or '').strip()
+                if not author_name:
+                    frappe.throw(_(f"Row {i+1}: Author is required in Authors Names"))
+                if author_name in seen_authors:
+                    frappe.throw(_(f'Duplicate author "{author_name}" in Authors Names'))
+                seen_authors.add(author_name)
 
-# API Functions
-@frappe.whitelist()
-def get_books():
-    """Get all books with basic information"""
-    books = frappe.get_all("Book", fields=[
-        "name", 
-        "article_name", 
-        "isbn", 
-        "publisher", 
-        "status", 
-        "cover",
-        "total_copies",
-        "available_copies",
-        "category"
-    ])
-    return books
-
-@frappe.whitelist()
-def get_book_by_id(book_id):
-    """Get specific book by ID"""
-    try:
-        book = frappe.get_doc("Book", book_id)
-        return book.as_dict()
-    except frappe.DoesNotExistError:
-        frappe.throw(_("Book not found"))
-
-@frappe.whitelist()
-def search_books(query):
-    """Search books by title, ISBN, or author"""
-    books = frappe.get_all("Book", 
-        filters=[
-            ['article_name', 'like', f'%{query}%'],
-            'or',
-            ['isbn', 'like', f'%{query}%'],
-        ],
-        fields=[
-            "name", 
-            "article_name", 
-            "isbn", 
-            "publisher", 
-            "status", 
-            "cover",
-            "category"
-        ]
-    )
-    return books
+                # Set default role if not set
+                if not author_row.role:
+                    author_row.role = "Author" if i == 0 else "Co-Author"
+        return

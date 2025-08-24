@@ -76,23 +76,20 @@ function fetch_book_details(frm) {
                 if (f.article_name) frm.set_value('article_name', f.article_name);
                 if (f.description) frm.set_value('description', f.description);
                 if (f.publisher) frm.set_value('publisher', f.publisher);
-                if (f.author_name) {
-                    // Display author names as text (for information only)
-                    console.log('Authors: ', f.author_name);
-                }
                 if (f.cover) frm.set_value('cover', f.cover);
 				if(f.category) frm.set_value('category',f.category);
 				frm.set_value("total_copies",10);
 				frm.set_value("available_copies",10);
-                if (Array.isArray(f.author_docnames) && f.author_docnames.length) {
-                    frm.clear_table('authors_names');
-                    f.author_docnames.forEach((author_docname) => {
-                        const row = frm.add_child('authors_names');
-                        row.author = author_docname; // child field is Link to Author
-                        if ('article' in row) row.article = frm.doc.name;
-                    });
-                    frm.refresh_field('authors_names');
-                }
+				const authors = Array.isArray(response.message.authors) ? response.message.authors : [];
+				if (authors.length) {
+					frm.clear_table('authors_names');
+					authors.forEach((a, idx) => {
+						const row = frm.add_child('authors_names');
+						row.author = a.author; // Link to Author (docname)
+						row.role = a.role || (idx === 0 ? 'Primary' : 'Secondary');
+					});
+					frm.refresh_field('authors_names');
+				}
 
                 frappe.show_alert({
                     message: __('Book details fetched successfully'),
